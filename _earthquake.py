@@ -41,9 +41,9 @@ def getValueOnlyFromItalyFromWebSite():
                 return(value)
 
 
-while True:
-    print(getValueFromWebSite())
-    print(getValueOnlyFromItalyFromWebSite())
+for i in range(100):
+    print('world: ' + str(getValueFromWebSite()))
+    print('italy: ' + str(getValueOnlyFromItalyFromWebSite()))
     time.sleep(20)
 
 
