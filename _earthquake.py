@@ -13,7 +13,6 @@ def getValueFromWebSite():
 
 
     for line in soup.find('td', {'class': 'text-center'}).stripped_strings:
-        print(line)
         if 'Mwp' in line:
             value = float(line.partition('Mwp')[2])
             if (value!=None):
@@ -22,9 +21,29 @@ def getValueFromWebSite():
             value = float(line.partition('ML')[2])
             if (value!=None):
                 return(value)
-        
+
+
+def getValueOnlyFromItalyFromWebSite():
+    response = urlopen('http://terremoti.ingv.it/')
+    #response = urlopen('https://www.3bmeteo.com/terremoti/italia')
+    soup = BeautifulSoup(response.read(),'html.parser')
+
+    #print(soup.body)
+    #print(soup.td)
+    #print(soup.find_all('td'))
+
+    lines = soup.find_all('td', {'class': 'text-center'})
+
+    for line in lines:
+        if 'ML' in line.get_text():
+            value = float(line.get_text().partition('ML')[2])
+            if (value!=None):
+                return(value)
+
+
 while True:
     print(getValueFromWebSite())
+    print(getValueOnlyFromItalyFromWebSite())
     time.sleep(20)
 
 
