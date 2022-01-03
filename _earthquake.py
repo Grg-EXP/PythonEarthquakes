@@ -1,6 +1,6 @@
 from urllib.request  import urlopen
 from bs4 import BeautifulSoup
-
+import time
 
 def getValueFromWebSite():
     response = urlopen('http://terremoti.ingv.it/')
@@ -13,11 +13,19 @@ def getValueFromWebSite():
 
 
     for line in soup.find('td', {'class': 'text-center'}).stripped_strings:
+        print(line)
+        if 'Mwp' in line:
+            value = float(line.partition('Mwp')[2])
+            if (value!=None):
+                return(value)
         if 'ML' in line:
             value = float(line.partition('ML')[2])
-            return(value)
-    
-print(getValueFromWebSite())
+            if (value!=None):
+                return(value)
+        
+while True:
+    print(getValueFromWebSite())
+    time.sleep(20)
 
 
 
