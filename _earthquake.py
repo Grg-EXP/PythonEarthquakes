@@ -65,6 +65,20 @@ for i in range(100):
     magnitude = getValueOnlyFromItalyFromWebSite()
     print('world: ' + str(getValueFromWebSite()))
     print('italy: ' + str(getValueOnlyFromItalyFromWebSite()))
+    if magnitude < 3:
+        playAudio(magnitude, audio1)
+    elif magnitude < 4:
+        playAudio(magnitude, audio2)
+    elif magnitude < 5:
+        playAudio(magnitude, audio3)
+    elif magnitude < 6:
+        playAudio(magnitude, audio4)
+    elif magnitude < 7:
+        playAudio(magnitude, audio5)
+    elif magnitude < 8:
+        playAudio(magnitude, audio6)
+    else:
+        playAudio(magnitude, audio7)
 
     setAudio(5)
     time.sleep(1)
