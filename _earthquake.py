@@ -1,9 +1,14 @@
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
-from playsound import playsound
 from ctypes import cast, POINTER
 from comtypes import CLSCTX_ALL
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
+from pydub import AudioSegment
+from pydub.playback import play
+from random import randrange
+# pip install simpleaudio
+# https://mixkit.co/free-sound-effects/
+
 import math
 import time
 
@@ -47,41 +52,84 @@ def getValueOnlyFromItalyFromWebSite():
 
 
 def setAudio(intensity):
+    # -52 = 2% volume
+    # 0 = 100% volume
+    if intensity < -52:
+        volume = -52
+    if intensity > 0:
+        volume = 0
     devices = AudioUtilities.GetSpeakers()
     interface = devices.Activate(
         IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
     volume = cast(interface, POINTER(IAudioEndpointVolume))
     # Get current volume
     currentVolumeDb = volume.GetMasterVolumeLevel()
-    volume.SetMasterVolumeLevel(currentVolumeDb - intensity, None)
+
+    volume.SetMasterVolumeLevel(intensity, None)
 
 
-def playAudio(path, intensity):
+def playAudio(intensity, path):
     setAudio(intensity)
-    playsound(path)
+    song = AudioSegment.from_wav(path)
+    play(song)
+    # playsound(path)
+
+
+def test():
+
+    magnitude = randrange(10)
+    print(magnitude)
+    correction = 0
+    MAX_VOLUME = 0
+    MIN_VOLUME = -52
+
+    if magnitude < 3:
+        playAudio(MIN_VOLUME + correction, 'short.wav')
+        playAudio(MIN_VOLUME*6/7 + correction, 'short.wav')
+    elif magnitude < 5:
+        playAudio(MIN_VOLUME*4/5 + correction, 'short.wav')
+    elif magnitude < 6:
+        playAudio(MIN_VOLUME/2 + correction, 'short.wav')
+    elif magnitude < 7:
+        playAudio(MIN_VOLUME/4 + correction, 'short.wav')
+    elif magnitude < 8:
+        playAudio(MIN_VOLUME/5 + correction, 'short.wav')
+    else:
+        playAudio(MAX_VOLUME + correction, 'short.wav')
+
+    time.sleep(10)
+
+
+def application():
+
+    print('world: ' + str(getValueFromWebSite()))
+    print('italy: ' + str(getValueOnlyFromItalyFromWebSite()))
+
+    magnitude = float(getValueOnlyFromItalyFromWebSite())
+    correction = 0
+    MAX_VOLUME = 0
+    MIN_VOLUME = -52
+
+    if magnitude < 3:
+        playAudio(MIN_VOLUME + correction, 'short.wav')
+    elif magnitude < 4:
+        playAudio(MIN_VOLUME*6/7 + correction, 'short.wav')
+    elif magnitude < 5:
+        playAudio(MIN_VOLUME*3/4 + correction, 'short.wav')
+    elif magnitude < 6:
+        playAudio(MIN_VOLUME/2 + correction, 'short.wav')
+    elif magnitude < 7:
+        playAudio(MIN_VOLUME/4 + correction, 'short.wav')
+    elif magnitude < 8:
+        playAudio(MIN_VOLUME/5 + correction, 'short.wav')
+    else:
+        playAudio(MAX_VOLUME + correction, 'short.wav')
+
+    time.sleep(10)
 
 
 for i in range(100):
-    magnitude = getValueOnlyFromItalyFromWebSite()
-    print('world: ' + str(getValueFromWebSite()))
-    print('italy: ' + str(getValueOnlyFromItalyFromWebSite()))
-    if magnitude < 3:
-        playAudio(magnitude, audio1)
-    elif magnitude < 4:
-        playAudio(magnitude, audio2)
-    elif magnitude < 5:
-        playAudio(magnitude, audio3)
-    elif magnitude < 6:
-        playAudio(magnitude, audio4)
-    elif magnitude < 7:
-        playAudio(magnitude, audio5)
-    elif magnitude < 8:
-        playAudio(magnitude, audio6)
-    else:
-        playAudio(magnitude, audio7)
-
-    setAudio(5)
-    time.sleep(1)
+    test()
 
 
 '''
