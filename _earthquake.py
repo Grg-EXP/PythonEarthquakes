@@ -6,6 +6,8 @@ from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 from pydub import AudioSegment
 from pydub.playback import play
 from random import randrange
+import sys
+import getopt
 # pip install simpleaudio
 # https://mixkit.co/free-sound-effects/
 
@@ -15,7 +17,7 @@ import time
 
 def getValueFromWebSite():
     response = urlopen('http://terremoti.ingv.it/')
-    #response = urlopen('https://www.3bmeteo.com/terremoti/italia')
+    # response = urlopen('https://www.3bmeteo.com/terremoti/italia')
     soup = BeautifulSoup(response.read(), 'html.parser')
 
     # print(soup.body)
@@ -35,7 +37,7 @@ def getValueFromWebSite():
 
 def getValueOnlyFromItalyFromWebSite():
     response = urlopen('http://terremoti.ingv.it/')
-    #response = urlopen('https://www.3bmeteo.com/terremoti/italia')
+    # response = urlopen('https://www.3bmeteo.com/terremoti/italia')
     soup = BeautifulSoup(response.read(), 'html.parser')
 
     # print(soup.body)
@@ -55,14 +57,13 @@ def setAudio(intensity):
     # -52 = 2% volume
     # 0 = 100% volume
     if intensity < -52:
-        volume = -52
-    if intensity > 0:
-        volume = 0
+        intensity = -52
+    elif intensity > 0:
+        intensity = -1
     devices = AudioUtilities.GetSpeakers()
     interface = devices.Activate(
         IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
     volume = cast(interface, POINTER(IAudioEndpointVolume))
-    # Get current volume
     currentVolumeDb = volume.GetMasterVolumeLevel()
 
     volume.SetMasterVolumeLevel(intensity, None)
@@ -75,61 +76,77 @@ def playAudio(intensity, path):
     # playsound(path)
 
 
-def test():
+def test(audiopath, correction, i):
 
-    magnitude = randrange(10)
+    print('audio selected: ' + str(audiopath))
+    print('correction applied: ' + str(correction))
+    magnitude = i
     print(magnitude)
-    correction = 0
-    MAX_VOLUME = 0
+
+    correction = float(correction)
+
     MIN_VOLUME = -52
+    VOLUME4 = -32
+    VOLUME5 = -22
+    VOLUME6 = -18
+    VOLUME7 = -14
+    VOLUME8 = -7
+    MAX_VOLUME = 0
 
     if magnitude < 3:
-        playAudio(MIN_VOLUME + correction, 'short.wav')
-        playAudio(MIN_VOLUME*6/7 + correction, 'short.wav')
-    elif magnitude < 5:
-        playAudio(MIN_VOLUME*4/5 + correction, 'short.wav')
-    elif magnitude < 6:
-        playAudio(MIN_VOLUME/2 + correction, 'short.wav')
-    elif magnitude < 7:
-        playAudio(MIN_VOLUME/4 + correction, 'short.wav')
-    elif magnitude < 8:
-        playAudio(MIN_VOLUME/5 + correction, 'short.wav')
-    else:
-        playAudio(MAX_VOLUME + correction, 'short.wav')
-
-    time.sleep(10)
-
-
-def application():
-
-    print('world: ' + str(getValueFromWebSite()))
-    print('italy: ' + str(getValueOnlyFromItalyFromWebSite()))
-
-    magnitude = float(getValueOnlyFromItalyFromWebSite())
-    correction = 0
-    MAX_VOLUME = 0
-    MIN_VOLUME = -52
-
-    if magnitude < 3:
-        playAudio(MIN_VOLUME + correction, 'short.wav')
+        playAudio(MIN_VOLUME + correction, audiopath)
     elif magnitude < 4:
-        playAudio(MIN_VOLUME*6/7 + correction, 'short.wav')
+        playAudio(VOLUME4 + correction, audiopath)
     elif magnitude < 5:
-        playAudio(MIN_VOLUME*3/4 + correction, 'short.wav')
+        playAudio(VOLUME5 + correction, audiopath)
     elif magnitude < 6:
-        playAudio(MIN_VOLUME/2 + correction, 'short.wav')
+        playAudio(VOLUME6 + correction, audiopath)
     elif magnitude < 7:
-        playAudio(MIN_VOLUME/4 + correction, 'short.wav')
+        playAudio(VOLUME7 + correction, audiopath)
     elif magnitude < 8:
-        playAudio(MIN_VOLUME/5 + correction, 'short.wav')
+        playAudio(VOLUME8 + correction, audiopath)
     else:
-        playAudio(MAX_VOLUME + correction, 'short.wav')
-
-    time.sleep(10)
+        playAudio(MAX_VOLUME - correction, audiopath)
 
 
-for i in range(100):
-    test()
+def application(audiopath, correction):
+
+    MIN_VOLUME = -52
+    VOLUME4 = -32
+    VOLUME5 = -22
+    VOLUME6 = -18
+    VOLUME7 = -14
+    VOLUME8 = -7
+    MAX_VOLUME = 0
+    correction = int(correction)
+
+    while True:
+        magnitude = float(getValueOnlyFromItalyFromWebSite())
+
+        if magnitude < 3:
+            playAudio(MIN_VOLUME + correction, audiopath)
+        elif magnitude < 4:
+            playAudio(VOLUME4 + correction, audiopath)
+        elif magnitude < 5:
+            playAudio(VOLUME5 + correction, audiopath)
+        elif magnitude < 6:
+            playAudio(VOLUME6 + correction, audiopath)
+        elif magnitude < 7:
+            playAudio(VOLUME7 + correction, audiopath)
+        elif magnitude < 8:
+            playAudio(VOLUME8 + correction, audiopath)
+        else:
+            playAudio(MAX_VOLUME, audiopath)
+
+        time.sleep(5)
+
+
+if __name__ == "__main__":
+    if len(sys.argv) > 3:
+        for i in range(10):
+            test(sys.argv[1], sys.argv[2], i)
+            time.sleep(1)
+    application(sys.argv[1], sys.argv[2])
 
 
 '''
@@ -143,7 +160,7 @@ for i in range(100):
 '''
 
 '''
-<div class="panel-body">      
+<div class="panel-body">
 <tr class="" data-href="http://terremoti.ingv.it/event/29389071">
 						<td class="text-nowrap "><a href="http://terremoti.ingv.it/event/29389071">2022-01-03&nbsp;09:36:34 </a>
 
