@@ -13,7 +13,7 @@ import getopt
 
 import math
 import time
-
+import threading
 
 def getValueFromWebSite():
     response = urlopen('http://terremoti.ingv.it/')
@@ -52,27 +52,42 @@ def getValueOnlyFromItalyFromWebSite():
             if (value != None):
                 return(value)
 
+def speed_change(sound, speed=1.0):  
+    sound_with_altered_frame_rate = sound._spawn(sound.raw_data, overrides={
+         "frame_rate": int(sound.frame_rate * speed)
+      })
+    return sound_with_altered_frame_rate.set_frame_rate(sound.frame_rate)
+
+
 
 def setAudio(intensity):
     # -52 = 2% volume
-    # 0 = 100% volume
+    # -0 = 100% volume
     if intensity < -52:
         intensity = -52
     elif intensity > 0:
-        intensity = -1
+        intensity = -0
     devices = AudioUtilities.GetSpeakers()
     interface = devices.Activate(
         IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
     volume = cast(interface, POINTER(IAudioEndpointVolume))
     currentVolumeDb = volume.GetMasterVolumeLevel()
 
-    volume.SetMasterVolumeLevel(intensity, None)
+    try:
+        volume.SetMasterVolumeLevel(intensity, None)
+    except:
+        print("intensity: " + str(intensity))
+        
+
+def playSong(path):
+    song = AudioSegment.from_wav(path)
+    play(song)
 
 
 def playAudio(intensity, path):
     setAudio(intensity)
-    song = AudioSegment.from_wav(path)
-    play(song)
+    playSong(path)
+    
     # playsound(path)
 
 
@@ -91,7 +106,7 @@ def test(audiopath, correction, i):
     VOLUME6 = -18
     VOLUME7 = -14
     VOLUME8 = -7
-    MAX_VOLUME = 0
+    MAX_VOLUME = -0
 
     if magnitude < 3:
         playAudio(MIN_VOLUME + correction, audiopath)
@@ -106,18 +121,19 @@ def test(audiopath, correction, i):
     elif magnitude < 8:
         playAudio(VOLUME8 + correction, audiopath)
     else:
-        playAudio(MAX_VOLUME - correction, audiopath)
+        playAudio(MAX_VOLUME, audiopath)
 
 
 def application(audiopath, correction):
 
+    TIME_SLEEPING = 5
     MIN_VOLUME = -52
     VOLUME4 = -32
     VOLUME5 = -22
     VOLUME6 = -18
     VOLUME7 = -14
     VOLUME8 = -7
-    MAX_VOLUME = 0
+    MAX_VOLUME = -0
     correction = int(correction)
 
     while True:
@@ -136,14 +152,14 @@ def application(audiopath, correction):
         elif magnitude < 8:
             playAudio(VOLUME8 + correction, audiopath)
         else:
-            playAudio(MAX_VOLUME, audiopath)
+            playAudio(MAX_VOLUME , audiopath)
 
-        time.sleep(5)
+        time.sleep(TIME_SLEEPING)
 
 
 if __name__ == "__main__":
     if len(sys.argv) > 3:
-        for i in range(10):
+        for i in range(1,10):
             test(sys.argv[1], sys.argv[2], i)
             time.sleep(1)
     application(sys.argv[1], sys.argv[2])
