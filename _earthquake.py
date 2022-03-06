@@ -34,6 +34,12 @@ def getValueFromWebSite():
             if (value != None):
                 return(value)
 
+def getIDFromWebSite():
+    response = urlopen('http://terremoti.ingv.it/')
+    soup = BeautifulSoup(response.read(), 'html.parser')
+    return str(soup.td)
+
+
 
 def getValueOnlyFromItalyFromWebSite():
     response = urlopen('http://terremoti.ingv.it/')
@@ -126,7 +132,7 @@ def test(audiopath, correction, i):
 
 def application(audiopath, correction):
 
-    TIME_SLEEPING = 5
+
     MIN_VOLUME = -52
     VOLUME4 = -32
     VOLUME5 = -22
@@ -136,34 +142,38 @@ def application(audiopath, correction):
     MAX_VOLUME = -0
     correction = int(correction)
 
-    while True:
-        magnitude = float(getValueOnlyFromItalyFromWebSite())
-
-        if magnitude < 3:
-            playAudio(MIN_VOLUME + correction, audiopath)
-        elif magnitude < 4:
-            playAudio(VOLUME4 + correction, audiopath)
-        elif magnitude < 5:
+    magnitude = float(getValueFromWebSite())
+    print("magnitudo rilevata: " +str(magnitude))
+    if magnitude < 3:
+        playAudio(MIN_VOLUME + correction, audiopath)
+    elif magnitude < 4:
+        playAudio(VOLUME4 + correction, audiopath)
+    elif magnitude < 5:
             playAudio(VOLUME5 + correction, audiopath)
-        elif magnitude < 6:
-            playAudio(VOLUME6 + correction, audiopath)
-        elif magnitude < 7:
+    elif magnitude < 6:
+        playAudio(VOLUME6 + correction, audiopath)
+    elif magnitude < 7:
             playAudio(VOLUME7 + correction, audiopath)
-        elif magnitude < 8:
-            playAudio(VOLUME8 + correction, audiopath)
-        else:
-            playAudio(MAX_VOLUME , audiopath)
-
-        time.sleep(TIME_SLEEPING)
+    elif magnitude < 8:
+        playAudio(VOLUME8 + correction, audiopath)
+    else:
+        playAudio(MAX_VOLUME , audiopath)
 
 
 if __name__ == "__main__":
+    #test
     if len(sys.argv) > 3:
         for i in range(1,10):
             test(sys.argv[1], sys.argv[2], i)
             time.sleep(1)
-    application(sys.argv[1], sys.argv[2])
 
+    body2=""
+    while True:
+        body1=getIDFromWebSite()
+        if(body1!=body2):       
+            application(sys.argv[1], sys.argv[2])
+            body2=getIDFromWebSite()
+        time.sleep(5)        
 
 '''
 

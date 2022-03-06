@@ -2,3 +2,6 @@ beautifulsoup4==4.10.0
 comtypes==1.1.12
 pycaw==20181226
 pydub==0.25.1
+#pip install simpleaudio
+
+#python -m pipreqs.pipreqs ./
