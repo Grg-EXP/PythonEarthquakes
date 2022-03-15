@@ -13,28 +13,42 @@ import getopt
 
 import math
 import time
-
+import threading
 
 def getValueFromWebSite():
-    response = urlopen('http://terremoti.ingv.it/')
-    # response = urlopen('https://www.3bmeteo.com/terremoti/italia')
-    soup = BeautifulSoup(response.read(), 'html.parser')
-
+    try:
+        response = urlopen('http://terremoti.ingv.it/')
+        # response = urlopen('https://www.3bmeteo.com/terremoti/italia')
+        soup = BeautifulSoup(response.read(), 'html.parser')
+        for line in soup.find('td', {'class': 'text-center'}).stripped_strings:
+            if 'Mwp' in line:
+                value = float(line.partition('Mwp')[2])
+                if (value != None):
+                    return value
+            if 'ML' in line:
+                value = float(line.partition('ML')[2])
+                if (value != None):
+                    return value           
+    except:
+        print("Errore di connessione al sito, assicurati di essere connesso ad internet")
+        return 0.0
     # print(soup.body)
     # print(soup.td)
     # print(soup.find_all('td'))
 
-    for line in soup.find('td', {'class': 'text-center'}).stripped_strings:
-        if 'Mwp' in line:
-            value = float(line.partition('Mwp')[2])
-            if (value != None):
-                return(value)
-        if 'ML' in line:
-            value = float(line.partition('ML')[2])
-            if (value != None):
-                return(value)
+    
+
+def getIDFromWebSite():
+    try:
+        response = urlopen('http://terremoti.ingv.it/')
+        soup = BeautifulSoup(response.read(), 'html.parser')
+        return str(soup.td)
+    except:
+        print("Errore di connessione al sito, assicurati di essere connesso ad internet")
+        return ""
 
 
+'''
 def getValueOnlyFromItalyFromWebSite():
     response = urlopen('http://terremoti.ingv.it/')
     # response = urlopen('https://www.3bmeteo.com/terremoti/italia')
@@ -51,39 +65,53 @@ def getValueOnlyFromItalyFromWebSite():
             value = float(line.get_text().partition('ML')[2])
             if (value != None):
                 return(value)
+'''
+
+def speed_change(sound, speed=1.0):  
+    sound_with_altered_frame_rate = sound._spawn(sound.raw_data, overrides={
+         "frame_rate": int(sound.frame_rate * speed)
+      })
+    return sound_with_altered_frame_rate.set_frame_rate(sound.frame_rate)
 
 
 def setAudio(intensity):
     # -52 = 2% volume
-    # 0 = 100% volume
+    # -0 = 100% volume
     if intensity < -52:
         intensity = -52
     elif intensity > 0:
-        intensity = -1
-    devices = AudioUtilities.GetSpeakers()
-    interface = devices.Activate(
-        IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
-    volume = cast(interface, POINTER(IAudioEndpointVolume))
-    currentVolumeDb = volume.GetMasterVolumeLevel()
+        intensity = -0
+    try:
+        devices = AudioUtilities.GetSpeakers()
+        interface = devices.Activate(
+            IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+        volume = cast(interface, POINTER(IAudioEndpointVolume))
+        currentVolumeDb = volume.GetMasterVolumeLevel()
+        volume.SetMasterVolumeLevel(intensity, None)
+    except:
+        print("Errore nella rilevazione del dispositivo audio, intensity: " + str(intensity))
+        
 
-    volume.SetMasterVolumeLevel(intensity, None)
+def playSong(path):
+    try:
+        song = AudioSegment.from_wav(path)
+        play(song)
+    except:
+        print("errore nella riproduzione della traccia audio, verificare di avere inserito il file audio con il nome corretto")
 
 
 def playAudio(intensity, path):
     setAudio(intensity)
-    song = AudioSegment.from_wav(path)
-    play(song)
-    # playsound(path)
+    playSong(path)
+    
 
+def test(audiopath, correction):
 
-def test(audiopath, correction, i):
+    for i in range(1,10):
+            application(audiopath, correction,i)
+            time.sleep(1)
 
-    print('audio selected: ' + str(audiopath))
-    print('correction applied: ' + str(correction))
-    magnitude = i
-    print(magnitude)
-
-    correction = float(correction)
+def application(audiopath, correction, magnitude):
 
     MIN_VOLUME = -52
     VOLUME4 = -32
@@ -91,63 +119,41 @@ def test(audiopath, correction, i):
     VOLUME6 = -18
     VOLUME7 = -14
     VOLUME8 = -7
-    MAX_VOLUME = 0
+    MAX_VOLUME = -0
+    correction = int(correction)
 
+    print("magnitudo rilevata: " +str(magnitude))
     if magnitude < 3:
         playAudio(MIN_VOLUME + correction, audiopath)
     elif magnitude < 4:
         playAudio(VOLUME4 + correction, audiopath)
     elif magnitude < 5:
-        playAudio(VOLUME5 + correction, audiopath)
+            playAudio(VOLUME5 + correction, audiopath)
     elif magnitude < 6:
         playAudio(VOLUME6 + correction, audiopath)
     elif magnitude < 7:
-        playAudio(VOLUME7 + correction, audiopath)
+            playAudio(VOLUME7 + correction, audiopath)
     elif magnitude < 8:
         playAudio(VOLUME8 + correction, audiopath)
     else:
-        playAudio(MAX_VOLUME - correction, audiopath)
-
-
-def application(audiopath, correction):
-
-    MIN_VOLUME = -52
-    VOLUME4 = -32
-    VOLUME5 = -22
-    VOLUME6 = -18
-    VOLUME7 = -14
-    VOLUME8 = -7
-    MAX_VOLUME = 0
-    correction = int(correction)
-
-    while True:
-        magnitude = float(getValueOnlyFromItalyFromWebSite())
-
-        if magnitude < 3:
-            playAudio(MIN_VOLUME + correction, audiopath)
-        elif magnitude < 4:
-            playAudio(VOLUME4 + correction, audiopath)
-        elif magnitude < 5:
-            playAudio(VOLUME5 + correction, audiopath)
-        elif magnitude < 6:
-            playAudio(VOLUME6 + correction, audiopath)
-        elif magnitude < 7:
-            playAudio(VOLUME7 + correction, audiopath)
-        elif magnitude < 8:
-            playAudio(VOLUME8 + correction, audiopath)
-        else:
-            playAudio(MAX_VOLUME, audiopath)
-
-        time.sleep(5)
+        playAudio(MAX_VOLUME , audiopath)
 
 
 if __name__ == "__main__":
-    if len(sys.argv) > 3:
-        for i in range(10):
-            test(sys.argv[1], sys.argv[2], i)
-            time.sleep(1)
-    application(sys.argv[1], sys.argv[2])
+    #test
+    if len(sys.argv) > 3:       
+        test(sys.argv[1], sys.argv[2])
+        
+    body2=""
+    while True:
+        body1=getIDFromWebSite()
+        print("Ultimo terremoto registrato: + " + body1)
 
+        if(body1!=body2):      
+            application(sys.argv[1], sys.argv[2], float(getValueFromWebSite()))
+            body2=getIDFromWebSite()
+        
+        time.sleep(10)        
 
 '''
 
