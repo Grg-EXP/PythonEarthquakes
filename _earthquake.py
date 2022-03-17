@@ -15,6 +15,7 @@ import math
 import time
 import threading
 
+
 def getValueFromWebSite():
     try:
         response = urlopen('http://terremoti.ingv.it/')
@@ -28,7 +29,7 @@ def getValueFromWebSite():
             if 'ML' in line:
                 value = float(line.partition('ML')[2])
                 if (value != None):
-                    return value           
+                    return value
     except:
         print("Errore di connessione al sito, assicurati di essere connesso ad internet")
         return 0.0
@@ -36,7 +37,6 @@ def getValueFromWebSite():
     # print(soup.td)
     # print(soup.find_all('td'))
 
-    
 
 def getIDFromWebSite():
     try:
@@ -67,10 +67,11 @@ def getValueOnlyFromItalyFromWebSite():
                 return(value)
 '''
 
-def speed_change(sound, speed=1.0):  
+
+def speed_change(sound, speed=1.0):
     sound_with_altered_frame_rate = sound._spawn(sound.raw_data, overrides={
-         "frame_rate": int(sound.frame_rate * speed)
-      })
+        "frame_rate": int(sound.frame_rate * speed)
+    })
     return sound_with_altered_frame_rate.set_frame_rate(sound.frame_rate)
 
 
@@ -89,8 +90,9 @@ def setAudio(intensity):
         currentVolumeDb = volume.GetMasterVolumeLevel()
         volume.SetMasterVolumeLevel(intensity, None)
     except:
-        print("Errore nella rilevazione del dispositivo audio, intensity: " + str(intensity))
-        
+        print(
+            "Errore nella rilevazione del dispositivo audio, intensity: " + str(intensity))
+
 
 def playSong(path):
     try:
@@ -103,13 +105,14 @@ def playSong(path):
 def playAudio(intensity, path):
     setAudio(intensity)
     playSong(path)
-    
+
 
 def test(audiopath, correction):
 
-    for i in range(1,10):
-            application(audiopath, correction,i)
-            time.sleep(1)
+    for i in range(1, 10):
+        application(audiopath, correction, i)
+        time.sleep(1)
+
 
 def application(audiopath, correction, magnitude):
 
@@ -122,38 +125,38 @@ def application(audiopath, correction, magnitude):
     MAX_VOLUME = -0
     correction = int(correction)
 
-    print("magnitudo rilevata: " +str(magnitude))
+    print("magnitudo rilevata: " + str(magnitude))
     if magnitude < 3:
         playAudio(MIN_VOLUME + correction, audiopath)
     elif magnitude < 4:
         playAudio(VOLUME4 + correction, audiopath)
     elif magnitude < 5:
-            playAudio(VOLUME5 + correction, audiopath)
+        playAudio(VOLUME5 + correction, audiopath)
     elif magnitude < 6:
         playAudio(VOLUME6 + correction, audiopath)
     elif magnitude < 7:
-            playAudio(VOLUME7 + correction, audiopath)
+        playAudio(VOLUME7 + correction, audiopath)
     elif magnitude < 8:
         playAudio(VOLUME8 + correction, audiopath)
     else:
-        playAudio(MAX_VOLUME , audiopath)
+        playAudio(MAX_VOLUME, audiopath)
 
 
 if __name__ == "__main__":
-    #test
-    if len(sys.argv) > 3:       
+    # test
+    if len(sys.argv) > 3:
         test(sys.argv[1], sys.argv[2])
-        
-    body2=""
+
+    body2 = ""
     while True:
-        body1=getIDFromWebSite()
+        body1 = getIDFromWebSite()
         print("Ultimo terremoto registrato: + " + body1)
 
-        if(body1!=body2):      
+        if(body1 != body2):
             application(sys.argv[1], sys.argv[2], float(getValueFromWebSite()))
-            body2=getIDFromWebSite()
-        
-        time.sleep(10)        
+            body2 = getIDFromWebSite()
+
+        time.sleep(5)
 
 '''
 
