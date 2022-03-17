@@ -2,6 +2,21 @@ beautifulsoup4==4.10.0
 comtypes==1.1.12
 pycaw==20181226
 pydub==0.25.1
-#pip install simpleaudio
+
+#1) installare python (puoi farlo anche tramite il Microsoft Store
+#2) apri powershell e verifica che python sia installato eseguendo il seguente comando:   Python --version
+#3) verifica che pip sia installato insieme a python eseguendo il comando:  pip --version
+#4) installa git per windows https://github.com/git-for-windows/git/releases/download/v2.35.1.windows.2/Git-2.35.1.2-64-bit.exe
+#5) apri powershell in una cartella in cui vuoi clonare il progetto ed esegui il comando: git clone https://github.com/Grg-EXP/PythonEarthquakes.git
+#6) esegui il comando con powershell all'interno della cartella in cui è stato clonato il progetto di github: pip install -r requirements.txt
+#7) esegui il comando: pip install simpleaudio
+#8)per avviare lo script esegui il seguente comando: python.exe .\_earthquake.py tracciaAudio correzione test
+# per esempio se vuoi riprodurre la tracciaAudio.wav con una correzzione del volume di 10 (ovvero aumenta il valore logaritmico di gestione del volume di 10)
+# esegui il comando: python.exe .\_earthquake.py .\tracciaAudio.wav 10
+# se vuoi effettuare un test del volume e del suono esegui il comando:  python.exe .\_earthquake.py  'short.wav'  10 t
+
+
+
+
 
 #python -m pipreqs.pipreqs ./
